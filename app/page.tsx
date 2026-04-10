@@ -57,7 +57,11 @@ function fmt(min: number) {
   return `${hh}:${m.toString().padStart(2, "0")} ${ampm}`;
 }
 
-function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+function wrapText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+): string[] {
   const words = text.split(/\s+/);
   const lines: string[] = [];
   let cur = "";
@@ -102,10 +106,46 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 }
 
 const DEFAULT_CLASSES: ClassBlock[] = [
-  { id: "seed-1", title: "K-POP BEGINNER", instructor: "JIA", day: "MON", start: 60, duration: 60, color: PALETTE[0], openEnrolment: true },
-  { id: "seed-2", title: "HIP-HOP FOUNDATIONS", instructor: "REX", day: "WED", start: 240, duration: 90, color: PALETTE[2], openEnrolment: false },
-  { id: "seed-3", title: "JAZZ FUNK", instructor: "MAYA", day: "FRI", start: 420, duration: 60, color: PALETTE[3], openEnrolment: true },
-  { id: "seed-4", title: "K-POP ADVANCED", instructor: "JIA", day: "SAT", start: 180, duration: 75, color: PALETTE[1], openEnrolment: false },
+  {
+    id: "seed-1",
+    title: "K-POP BEGINNER",
+    instructor: "JIA",
+    day: "MON",
+    start: 60,
+    duration: 60,
+    color: PALETTE[0],
+    openEnrolment: true,
+  },
+  {
+    id: "seed-2",
+    title: "HIP-HOP FOUNDATIONS",
+    instructor: "REX",
+    day: "WED",
+    start: 240,
+    duration: 90,
+    color: PALETTE[2],
+    openEnrolment: false,
+  },
+  {
+    id: "seed-3",
+    title: "JAZZ FUNK",
+    instructor: "MAYA",
+    day: "FRI",
+    start: 420,
+    duration: 60,
+    color: PALETTE[3],
+    openEnrolment: true,
+  },
+  {
+    id: "seed-4",
+    title: "K-POP ADVANCED",
+    instructor: "JIA",
+    day: "SAT",
+    start: 180,
+    duration: 75,
+    color: PALETTE[1],
+    openEnrolment: false,
+  },
 ];
 
 const EMPTY_FORM = {
@@ -131,10 +171,12 @@ const DEFAULT_LABELS: Record<string, string> = {
 
 export default function Home() {
   const [classes, setClasses] = useState<ClassBlock[]>(DEFAULT_CLASSES);
-  const [colorLabels, setColorLabels] = useState<Record<string, string>>(DEFAULT_LABELS);
+  const [colorLabels, setColorLabels] =
+    useState<Record<string, string>>(DEFAULT_LABELS);
   const [hydrated, setHydrated] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [mobileDay, setMobileDay] = useState(0); // index into DAYS
 
   // Load from localStorage once on mount
   useEffect(() => {
@@ -178,7 +220,9 @@ export default function Home() {
       openEnrolment: form.openEnrolment,
     };
     if (editingId) {
-      setClasses((cs) => cs.map((c) => (c.id === editingId ? { ...c, ...data } : c)));
+      setClasses((cs) =>
+        cs.map((c) => (c.id === editingId ? { ...c, ...data } : c)),
+      );
       setEditingId(null);
     } else {
       setClasses((cs) => [...cs, { id: uid(), ...data }]);
@@ -238,7 +282,9 @@ export default function Home() {
         const dMin = Math.round(dy / PX_PER_MIN / SNAP) * SNAP;
         let next = initial + dMin;
         next = Math.max(0, Math.min(TOTAL_MINUTES - block.duration, next));
-        setClasses((cs) => cs.map((c) => (c.id === id ? { ...c, start: next } : c)));
+        setClasses((cs) =>
+          cs.map((c) => (c.id === id ? { ...c, start: next } : c)),
+        );
       };
       const up = () => {
         window.removeEventListener("pointermove", move);
@@ -285,7 +331,7 @@ export default function Home() {
 
     // ---------- HEADER ----------
     const padX = 20;
-    const headerTop = 14;
+    const headerTop = 4;
     const headerH = 110;
 
     // logo (left)
@@ -294,7 +340,13 @@ export default function Home() {
       const logo = await loadImage("/logo.png");
       const logoH = 100;
       const logoW = (logo.width / logo.height) * logoH;
-      ctx.drawImage(logo, padX, headerTop + (headerH - logoH) / 2, logoW, logoH);
+      ctx.drawImage(
+        logo,
+        padX,
+        headerTop + (headerH - logoH) / 2,
+        logoW,
+        logoH,
+      );
       logoRight = padX + logoW + 14;
     } catch {
       // continue without logo
@@ -307,7 +359,11 @@ export default function Home() {
     ctx.fillText("JSW DANCE STUDIO", logoRight, headerTop + 56);
     ctx.font = "500 17px system-ui, -apple-system, Helvetica, Arial";
     ctx.fillStyle = "#c9b8ff";
-    ctx.fillText("AUCKLAND  ·  K-POP  ·  HIP-HOP  ·  JAZZ", logoRight, headerTop + 82);
+    ctx.fillText(
+      "AUCKLAND  ·  K-POP  ·  HIP-HOP  ·  JAZZ",
+      logoRight,
+      headerTop + 82,
+    );
 
     // right block: 2026 TIMETABLE + social
     ctx.textAlign = "right";
@@ -425,7 +481,6 @@ export default function Home() {
         ctx.lineWidth = 1.5;
         ctx.stroke();
       }
-
     });
 
     // ---------- LEGEND ROW ----------
@@ -463,7 +518,8 @@ export default function Home() {
     const pricingTop = legendY + 16;
     const pricingH = 72;
     const tierGap = 10;
-    const tierW = (W - padX * 2 - tierGap * (PRICING.length - 1)) / PRICING.length;
+    const tierW =
+      (W - padX * 2 - tierGap * (PRICING.length - 1)) / PRICING.length;
     PRICING.forEach((t, i) => {
       const tx = padX + i * (tierW + tierGap);
       roundedRect(ctx, tx, pricingTop, tierW, pricingH, 14);
@@ -492,7 +548,7 @@ export default function Home() {
   const gridHeight = TOTAL_MINUTES * PX_PER_MIN;
 
   return (
-    <div className="min-h-screen w-full bg-zinc-950 text-white p-6">
+    <div className="min-h-screen w-full bg-zinc-950 text-white p-3 md:p-6">
       <div className="mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
         {/* Sidebar */}
         <aside className="bg-zinc-900 rounded-2xl p-5 space-y-4 h-fit">
@@ -515,7 +571,9 @@ export default function Home() {
             <select
               className="w-full bg-zinc-800 rounded-lg px-3 py-2 text-sm"
               value={form.day}
-              onChange={(e) => setForm({ ...form, day: e.target.value as DayKey })}
+              onChange={(e) =>
+                setForm({ ...form, day: e.target.value as DayKey })
+              }
             >
               {DAYS.map((d) => (
                 <option key={d} value={d}>
@@ -527,7 +585,9 @@ export default function Home() {
               <select
                 className="flex-1 bg-zinc-800 rounded-lg px-3 py-2 text-sm"
                 value={form.startHour}
-                onChange={(e) => setForm({ ...form, startHour: +e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, startHour: +e.target.value })
+                }
               >
                 {hours.slice(0, -1).map((h) => (
                   <option key={h} value={h}>
@@ -539,7 +599,9 @@ export default function Home() {
               <select
                 className="flex-1 bg-zinc-800 rounded-lg px-3 py-2 text-sm"
                 value={form.startMin}
-                onChange={(e) => setForm({ ...form, startMin: +e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, startMin: +e.target.value })
+                }
               >
                 {[0, 15, 30, 45].map((m) => (
                   <option key={m} value={m}>
@@ -575,7 +637,9 @@ export default function Home() {
               <input
                 type="checkbox"
                 checked={form.openEnrolment}
-                onChange={(e) => setForm({ ...form, openEnrolment: e.target.checked })}
+                onChange={(e) =>
+                  setForm({ ...form, openEnrolment: e.target.checked })
+                }
                 className="accent-orange-500 w-4 h-4"
               />
               <span className="inline-block w-3 h-3 rounded-full bg-orange-500" />
@@ -648,7 +712,10 @@ export default function Home() {
                   onClick={() => selectForEdit(c.id)}
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-3 h-3 rounded" style={{ backgroundColor: c.color }} />
+                    <div
+                      className="w-3 h-3 rounded"
+                      style={{ backgroundColor: c.color }}
+                    />
                     {c.openEnrolment && (
                       <div className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />
                     )}
@@ -672,7 +739,7 @@ export default function Home() {
         </aside>
 
         {/* Preview */}
-        <main className="bg-gradient-to-b from-[#0b0b14] to-[#1a1230] rounded-2xl p-6 overflow-hidden">
+        <main className="bg-gradient-to-b from-[#0b0b14] to-[#1a1230] rounded-2xl p-4 md:p-6 overflow-hidden">
           {/* header row */}
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
@@ -688,22 +755,25 @@ export default function Home() {
               </div>
             </div>
             <div className="text-right">
-              <div className="text-lg font-extrabold leading-none">2026 TIMETABLE</div>
-              <div className="text-xs text-violet-300 mt-1">@jswdancestudio</div>
+              <div className="text-lg font-extrabold leading-none">
+                2026 TIMETABLE
+              </div>
+              <div className="text-xs text-violet-300 mt-1">
+                @jswdancestudio
+              </div>
             </div>
           </div>
 
-          <div ref={gridRef} className="mt-5">
-            {/* day headers */}
+          {/* ===== DESKTOP GRID (md+) ===== */}
+          <div ref={gridRef} className="mt-5 hidden md:block">
             <div className="grid grid-cols-[50px_repeat(7,1fr)] text-center text-xs font-bold border-b border-white/20 pb-2">
               <div />
               {DAYS.map((d) => (
                 <div key={d}>{d}</div>
               ))}
             </div>
-            {/* body */}
             <div
-              className="grid grid-cols-[50px_repeat(7,1fr)] relative"
+              className="grid grid-cols-[50px_repeat(7,1fr)] relative pt-2"
               style={{ height: gridHeight }}
             >
               <div className="relative">
@@ -742,7 +812,9 @@ export default function Home() {
                         key={c.id}
                         onPointerDown={(e) => onPointerDown(e, c.id)}
                         className={`absolute rounded-lg p-2 text-[10px] text-white cursor-grab active:cursor-grabbing select-none touch-none ${
-                          editingId === c.id ? "ring-2 ring-white ring-inset" : ""
+                          editingId === c.id
+                            ? "ring-2 ring-white ring-inset"
+                            : ""
                         }`}
                         style={{
                           top: c.start * PX_PER_MIN,
@@ -759,11 +831,96 @@ export default function Home() {
                           {c.title}
                         </div>
                         <div className="opacity-90">{fmt(c.start)}</div>
-                        {c.instructor && <div className="opacity-90">{c.instructor}</div>}
+                        {c.instructor && (
+                          <div className="opacity-90">{c.instructor}</div>
+                        )}
                       </div>
                     ))}
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* ===== MOBILE SINGLE-DAY VIEW ===== */}
+          <div className="mt-5 md:hidden">
+            {/* Day nav */}
+            <div className="flex items-center justify-between border-b border-white/20 pb-2 mb-0">
+              <button
+                onClick={() => setMobileDay((d) => (d - 1 + 7) % 7)}
+                className="px-3 py-1 text-lg font-bold text-white/70 hover:text-white"
+              >
+                ‹
+              </button>
+              <span className="text-sm font-bold">{DAYS[mobileDay]}</span>
+              <button
+                onClick={() => setMobileDay((d) => (d + 1) % 7)}
+                className="px-3 py-1 text-lg font-bold text-white/70 hover:text-white"
+              >
+                ›
+              </button>
+            </div>
+            {/* Single column */}
+            <div
+              className="grid grid-cols-[40px_1fr] relative"
+              style={{ height: gridHeight }}
+            >
+              <div className="relative">
+                {hours.map((h) => {
+                  const top = (h - START_HOUR) * 60 * PX_PER_MIN;
+                  const hh = ((h + 11) % 12) + 1;
+                  return (
+                    <div
+                      key={h}
+                      className="absolute right-2 text-[10px] text-white/50"
+                      style={{ top: top - 6 }}
+                    >
+                      {hh}
+                      {h >= 12 ? "PM" : "AM"}
+                    </div>
+                  );
+                })}
+              </div>
+              <div
+                className="relative border-l border-white/10"
+                style={{ height: gridHeight }}
+              >
+                {hours.map((h) => (
+                  <div
+                    key={h}
+                    className="absolute left-0 right-0 border-t border-white/5"
+                    style={{ top: (h - START_HOUR) * 60 * PX_PER_MIN }}
+                  />
+                ))}
+                {classes
+                  .filter((c) => c.day === DAYS[mobileDay])
+                  .map((c) => (
+                    <div
+                      key={c.id}
+                      onPointerDown={(e) => onPointerDown(e, c.id)}
+                      className={`absolute rounded-lg p-2 text-xs text-white cursor-grab active:cursor-grabbing select-none touch-none ${
+                        editingId === c.id ? "ring-2 ring-white ring-inset" : ""
+                      }`}
+                      style={{
+                        top: c.start * PX_PER_MIN,
+                        height: c.duration * PX_PER_MIN,
+                        left: 4,
+                        right: 4,
+                        backgroundColor: c.color,
+                      }}
+                    >
+                      {c.openEnrolment && (
+                        <div className="absolute top-1.5 right-1.5 w-3 h-3 rounded-full bg-orange-500 ring-1 ring-white/90" />
+                      )}
+                      <div className="font-extrabold leading-tight break-words pr-4">
+                        {c.title}
+                      </div>
+                      <div className="opacity-90">{fmt(c.start)}</div>
+                      {c.instructor && (
+                        <div className="opacity-90">{c.instructor}</div>
+                      )}
+                    </div>
+                  ))}
+              </div>
             </div>
           </div>
 
@@ -782,7 +939,9 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2">
               <span className="inline-block w-3 h-3 rounded-full bg-orange-500 ring-1 ring-white/80" />
-              <span className="text-white/80">Open for enrolment — DM to book</span>
+              <span className="text-white/80">
+                Open for enrolment — DM to book
+              </span>
             </div>
           </div>
 
