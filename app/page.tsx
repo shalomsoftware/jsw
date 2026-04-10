@@ -453,22 +453,18 @@ export default function Home() {
       ctx.textAlign = "left";
       ctx.font = "800 18px system-ui, -apple-system, Helvetica, Arial";
       const titleLines = wrapText(ctx, c.title, textMaxW);
-      let ty = y + 22;
+      let ty = y + 19;
       for (const line of titleLines) {
-        if (ty > y + h - 4) break;
         ctx.fillText(line, textX, ty);
-        ty += 20;
+        ty += 17;
       }
 
       // time
       ctx.font = "500 14px system-ui, -apple-system, Helvetica, Arial";
-      const meta = fmt(c.start);
-      if (ty + 16 <= y + h - 2) {
-        ctx.fillText(wrapText(ctx, meta, textMaxW)[0] ?? "", textX, ty);
-        ty += 18;
-      }
-      if (c.instructor && ty + 16 <= y + h - 2) {
-        ctx.fillText(wrapText(ctx, c.instructor, textMaxW)[0] ?? "", textX, ty);
+      ctx.fillText(fmt(c.start), textX, ty);
+      ty += 15;
+      if (c.instructor) {
+        ctx.fillText(c.instructor, textX, ty);
       }
 
       // open enrolment dot (top-right)
